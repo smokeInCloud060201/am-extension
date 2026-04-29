@@ -2,7 +2,7 @@ import * as dotenv from 'dotenv';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-export class JiraClient {
+export class JiraService {
     private domain: string;
     private email: string;
     private apiToken: string;
@@ -44,5 +44,25 @@ export class JiraClient {
         }
 
         return response.json();
+    }
+
+    public extractTargetProjects(issue: any): Set<string> {
+        const descJson = JSON.stringify(issue.fields?.description || {});
+        
+        // Extract projects matching `In [ProjectName]` or `- project-name:`
+        const re1 = /In \[([a-zA-Z0-9_-]+)\]/g;
+        const re2 = /- ([a-z0-9-]+):/g;
+        
+        const targetProjects = new Set<string>();
+        
+        let match;
+        while ((match = re1.exec(descJson)) !== null) {
+            targetProjects.add(match[1]);
+        }
+        while ((match = re2.exec(descJson)) !== null) {
+            targetProjects.add(match[1]);
+        }
+
+        return targetProjects;
     }
 }
