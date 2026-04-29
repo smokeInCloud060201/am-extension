@@ -1,3 +1,5 @@
 target/
 .env
 am-extension/node_modules/
+am-extension/*.vsix
+am-extension/out
