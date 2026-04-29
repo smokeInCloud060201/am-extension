@@ -6,6 +6,13 @@ interface Task {
   state: string;
 }
 
+const COLUMNS = [
+  { id: 'todo', title: 'To Do', states: ['Init', 'FetchJira'] },
+  { id: 'in_progress', title: 'In Progress', states: ['Research', 'Plan', 'Implement'] },
+  { id: 'review', title: 'Review', states: ['Review'] },
+  { id: 'done', title: 'Done', states: ['Done', 'Error'] }
+];
+
 function App() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,15 +46,26 @@ function App() {
         ) : tasks.length === 0 ? (
           <p>No active tasks found.</p>
         ) : (
-          <div className="task-grid">
-            {tasks.map((task) => (
-              <div key={task.task_code} className="task-card">
-                <h2>{task.task_code}</h2>
-                <div className={`status-badge status-${task.state.toLowerCase().replace(/[^a-z]/g, '')}`}>
-                  {task.state}
+          <div className="kanban-board">
+            {COLUMNS.map(col => {
+              const colTasks = tasks.filter(t => col.states.includes(t.state));
+              return (
+                <div key={col.id} className="kanban-column">
+                  <h3 className="kanban-column-header">
+                    {col.title}
+                    <span className="task-count">{colTasks.length}</span>
+                  </h3>
+                  {colTasks.map((task) => (
+                    <div key={task.task_code} className="task-card">
+                      <h2>{task.task_code}</h2>
+                      <div className={`status-badge status-${task.state.toLowerCase().replace(/[^a-z]/g, '')}`}>
+                        {task.state}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </main>
