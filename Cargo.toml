@@ -1,7 +1,0 @@
-[workspace]
-members = [
-    "am-task",
-    "am-core",
-    "am-mcp"
-]
-resolver = "2"

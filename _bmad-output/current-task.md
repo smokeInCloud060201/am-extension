@@ -1,10 +1,33 @@
-# Task: CAPP-2259
+# Task: EKSK-1828
 
 ## Target Projects Detected:
-- None found (Running in orchestrator root)
+- khaos-api
 
-## Instructions
-Please implement the required changes locally across the target projects and leave them uncommitted for human review.
+## SYSTEM PROMPT INSTRUCTIONS
+You are Antigravity, executing the AM Workflow. You must follow these steps strictly:
+
+### STEP 2: Parse Context
+Read the raw Jira Description JSON at the bottom of this file. Focus heavily on the `[AGENT]` section if it exists. Intelligently extract and write out:
+1. **Problem**
+2. **Required Work**
+3. **Expected Outcome**
+
+### STEP 3: Question & Research Loop
+If you have any questions or ambiguity regarding the architecture, requirements, or dependencies:
+- Use your tools to search Jira and Confluence.
+- If unresolved, ask the human.
+- Do NOT proceed to Step 5 until all ambiguity is resolved.
+
+### STEP 5: Implement Solution
+Implement the code across the Target Projects listed above.
+
+### STEP 6: Antigravity Code Review
+Once implemented, review your own code for edge cases, performance, and best practices. Fix any issues found.
+
+### STEP 8: Iteration
+If the Human reviewer tells you the code is NOT good, update the code and repeat the review.
+
+---
 
 ## Jira Raw Description JSON
-{"content":[{"attrs":{"localId":"89bb7347b0f1"},"content":[{"text":"Earliest MI Date for Commercial Premises to change to 7 working days if:","type":"text"}],"type":"paragraph"},{"attrs":{"localId":"555c96c68817","order":1},"content":[{"attrs":{"localId":"605fbe65c193"},"content":[{"attrs":{"localId":"bbd5ebb6976c"},"content":[{"text":"Electricity Supply Capacity chosen is more than 45kVA","type":"text"}],"type":"paragraph"}],"type":"listItem"},{"attrs":{"localId":"605fbe65c193"},"content":[{"attrs":{"localId":"915a9e7170a0"},"content":[{"text":"Temporary Supply is selected (TBC)","type":"text"}],"type":"paragraph"}],"type":"listItem"}],"type":"orderedList"},{"attrs":{"localId":"0fb646d824b7"},"type":"paragraph"},{"attrs":{"localId":"da3fee6f1421"},"content":[{"text":"FE will pass us:","type":"text"}],"type":"paragraph"},{"attrs":{"localId":"d4e7e3361485"},"content":[{"attrs":{"localId":"87576ede973e"},"content":[{"attrs":{"localId":"bc1bc4d3346d"},"content":[{"marks":[{"type":"code"}],"text":"isHighTensionCustomer","type":"text"},{"text":" Boolean?","type":"text"}],"type":"paragraph"}],"type":"listItem"},{"attrs":{"localId":"87576ede973e"},"content":[{"attrs":{"localId":"868db2f4e0e1"},"content":[{"marks":[{"type":"code"}],"text":"type_of_usage","type":"text"},{"text":" => temporary or permanent","type":"text"}],"type":"paragraph"}],"type":"listItem"}],"type":"bulletList"},{"attrs":{"localId":"0bfffe3d9474"},"content":[{"text":"(These are existing request payload accepted by BE)","type":"text"}],"type":"paragraph"},{"attrs":{"localId":"2fb597424121"},"type":"paragraph"},{"attrs":{"localId":"2d389f9be80a"},"content":[{"text":"Working days: Mon-Sat, excluding Sun and PH","type":"text"}],"type":"paragraph"},{"attrs":{"localId":"28a649508430"},"content":[{"text":"Example:","type":"text"}],"type":"paragraph"},{"attrs":{"localId":"78eab6c341e6"},"content":[{"text":"If today is Tue ","type":"text"},{"attrs":{"localId":"1ef991677515","timestamp":"1777334400000"},"type":"date"},{"text":" Tue, the next available date should be ","type":"text"},{"attrs":{"localId":"a36d212e5a43","timestamp":"1778112000000"},"type":"date"},{"text":"Thu since Friday ","type":"text"},{"attrs":{"localId":"4bf06487b3e7","timestamp":"1777593600000"},"type":"date"},{"text":"is PH","type":"text"},{"type":"hardBreak"}],"type":"paragraph"}],"type":"doc","version":1}
+{"content":[{"attrs":{"localId":"bc0fcb08faf0"},"content":[{"text":"Issue:","type":"text"}],"type":"paragraph"},{"attrs":{"localId":"d5283f563595"},"content":[{"text":"In our backend configuration, we’ve set the maximum file size that can be retrieved to be 10MB. However recently, BUs have reported that some customers are uploading file sizes of 10~12MB, causing them to be blocked from uploading their files.","type":"text"}],"type":"paragraph"},{"attrs":{"localId":"8f00120ca1ab"},"type":"paragraph"},{"attrs":{"localId":"2ca2c28fc294"},"content":[{"text":"To fix: Increase the maximum file size limit per file to 15MB","type":"text"}],"type":"paragraph"},{"attrs":{"localId":"bc0fcb08faf0"},"type":"paragraph"},{"attrs":{"localId":"bc0fcb08faf0"},"content":[{"text":"Steps to reproduce:","type":"text"}],"type":"paragraph"},{"attrs":{"localId":"936990c22f1f","order":1},"content":[{"attrs":{"localId":"b5bb09b0273e"},"content":[{"attrs":{"localId":"58c6ce22fa27"},"content":[{"text":"Open Account Commercial Personal/Company Flow","type":"text"}],"type":"paragraph"}],"type":"listItem"},{"attrs":{"localId":"b5bb09b0273e"},"content":[{"attrs":{"localId":"33cff34a2398"},"content":[{"text":"Proceed all the way to Upload Files section","type":"text"}],"type":"paragraph"}],"type":"listItem"},{"attrs":{"localId":"b5bb09b0273e"},"content":[{"attrs":{"localId":"a9d21539762d"},"content":[{"text":"Scan QR Code","type":"text"}],"type":"paragraph"}],"type":"listItem"},{"attrs":{"localId":"b5bb09b0273e"},"content":[{"attrs":{"localId":"1e5549ffa0de"},"content":[{"text":"For Documentary of Proof of Occupancy, upload a single file > 10MB in size","type":"text"}],"type":"paragraph"}],"type":"listItem"}],"type":"orderedList"},{"attrs":{"localId":"df79ad532bd7"},"content":[{"text":"Expectation:","type":"text"}],"type":"paragraph"},{"attrs":{"localId":"34e23175c4bd"},"content":[{"attrs":{"localId":"5171e891d3d1"},"content":[{"attrs":{"localId":"8d170fe7cc18"},"content":[{"text":"User should be able to upload file >10 MB in size","type":"text"}],"type":"paragraph"}],"type":"listItem"}],"type":"bulletList"},{"attrs":{"localId":"e2950254bf4b"},"content":[{"text":"Actual:","type":"text"}],"type":"paragraph"},{"attrs":{"localId":"8cb91985818b"},"content":[{"attrs":{"localId":"c40227cc4747"},"content":[{"attrs":{"localId":"7b19e726a431"},"content":[{"text":"User is blocked from uploading file > 10MB in size, with an error message.","type":"text"},{"type":"hardBreak"},{"type":"hardBreak"},{"type":"hardBreak"},{"text":"[AGENT]","type":"text"},{"type":"hardBreak"},{"marks":[{"type":"strong"}],"text":"Context","type":"text"},{"text":": In our backend configuration, we’ve set the maximum file size that can be retrieved to be 10MB. However recently, User have reported that some customers are uploading file sizes of 10~12MB, causing them to be blocked from uploading their files.","type":"text"},{"type":"hardBreak"},{"text":"Expectation: Increase upload file size to 15MB - Ensure file upload success when upload 3 files at time each file ~ 15MB","type":"text"},{"type":"hardBreak"},{"type":"hardBreak"},{"text":"Strategy:","type":"text"},{"type":"hardBreak"},{"text":"- khaos-api: Increase upload file size to 15, increase request payload size, check the validation for file upload","type":"text"}],"type":"paragraph"}],"type":"listItem"}],"type":"bulletList"}],"type":"doc","version":1}
