@@ -7,8 +7,33 @@ import * as fs from 'fs';
 
 const execAsync = util.promisify(exec);
 
+class AmUriHandler implements vscode.UriHandler {
+    handleUri(uri: vscode.Uri): vscode.ProviderResult<void> {
+        if (uri.path === '/startTask') {
+            vscode.commands.executeCommand('am.startTask');
+        } else if (uri.path === '/reloadWindow') {
+            vscode.commands.executeCommand('workbench.action.reloadWindow');
+        }
+    }
+}
+
 export function activate(context: vscode.ExtensionContext) {
     console.log('Agent Management extension is now active!');
+    
+    context.subscriptions.push(vscode.window.registerUriHandler(new AmUriHandler()));
+
+    // Create an output channel for debugging
+    const outputChannel = vscode.window.createOutputChannel('Agent Management');
+    context.subscriptions.push(outputChannel);
+    outputChannel.appendLine('Agent Management extension activated.');
+
+    // Create a status bar item for quick access
+    const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
+    statusBarItem.command = 'am.startTask';
+    statusBarItem.text = '$(play) Start AM Task';
+    statusBarItem.tooltip = 'Start an Agent Management Task';
+    statusBarItem.show();
+    context.subscriptions.push(statusBarItem);
 
     let disposable = vscode.commands.registerCommand('am.startTask', async () => {
         try {
@@ -47,16 +72,29 @@ export function activate(context: vscode.ExtensionContext) {
             if (targetProjects.size > 0) {
                 vscode.window.showInformationMessage(`AM: Preparing git branches for ${targetProjects.size} projects...`);
                 
-                const workspaceRoot = process.env.WORKSPACE_PATH || '../../company';
-                const extensionRoot = path.join(__dirname, '../../');
+                const workspaceFolders = vscode.workspace.workspaceFolders;
+                const activeWorkspaceRoot = workspaceFolders && workspaceFolders.length > 0 ? workspaceFolders[0].uri.fsPath : '';
+                
+                const workspaceRootStr = process.env.WORKSPACE_PATH || '../../company';
+                // If it's an absolute path, use it. Otherwise, resolve relative to active workspace.
+                const finalWorkspacePath = path.isAbsolute(workspaceRootStr) 
+                    ? workspaceRootStr 
+                    : path.resolve(activeWorkspaceRoot, workspaceRootStr);
                 
                 for (const project of targetProjects) {
-                    const projectPath = path.resolve(extensionRoot, workspaceRoot, project);
+                    const projectPath = path.resolve(finalWorkspacePath, project);
+                    outputChannel.appendLine(`[Git] Preparing project: ${project} at ${projectPath}`);
                     try {
-                        await execAsync(`git checkout master && git fetch && git pull origin master && git checkout -b ${taskCode}`, { cwd: projectPath });
-                    } catch (error) {
-                        console.error(`Git error for ${project}:`, error);
-                        vscode.window.showWarningMessage(`Failed git setup for ${project}`);
+                        const { stdout, stderr } = await execAsync(`git checkout master && git fetch && git pull origin master && (git checkout ${taskCode} || git checkout -b ${taskCode})`, { cwd: projectPath });
+                        outputChannel.appendLine(`[Git] Success for ${project}:\n${stdout}`);
+                        if (stderr) outputChannel.appendLine(`[Git] Stderr for ${project}:\n${stderr}`);
+                    } catch (error: any) {
+                        outputChannel.appendLine(`[Git Error] Failed to setup ${project} at ${projectPath}`);
+                        outputChannel.appendLine(`Message: ${error.message}`);
+                        outputChannel.appendLine(`Stdout: ${error.stdout || 'None'}`);
+                        outputChannel.appendLine(`Stderr: ${error.stderr || 'None'}`);
+                        outputChannel.show(); // Bring the output channel to front on error
+                        vscode.window.showErrorMessage(`Failed git setup for ${project}. Check 'Agent Management' output channel for details.`);
                     }
                 }
             } else {
@@ -65,7 +103,10 @@ export function activate(context: vscode.ExtensionContext) {
 
             vscode.window.showInformationMessage(`AM: Generating Task Context...`);
 
-            const outputDir = path.join(__dirname, '../../_bmad-output');
+            const workspaceFolders = vscode.workspace.workspaceFolders;
+            const activeWorkspaceRoot = workspaceFolders && workspaceFolders.length > 0 ? workspaceFolders[0].uri.fsPath : '';
+            
+            const outputDir = path.join(activeWorkspaceRoot, '_bmad-output');
             if (!fs.existsSync(outputDir)) {
                 fs.mkdirSync(outputDir, { recursive: true });
             }
@@ -82,7 +123,10 @@ export function activate(context: vscode.ExtensionContext) {
             vscode.window.showInformationMessage(`AM: Task Ready! Tell Antigravity to execute.`);
 
         } catch (error: any) {
-            vscode.window.showErrorMessage(`AM Error: ${error.message}`);
+            outputChannel.appendLine(`[Error] Top level execution error: ${error.message}`);
+            if (error.stack) outputChannel.appendLine(`[Stack] ${error.stack}`);
+            outputChannel.show();
+            vscode.window.showErrorMessage(`AM Error: ${error.message}. Check Output channel.`);
         }
     });
 

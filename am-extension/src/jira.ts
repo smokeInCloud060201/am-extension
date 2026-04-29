@@ -1,8 +1,6 @@
 import * as dotenv from 'dotenv';
 import * as path from 'path';
-
-// Load .env from workspace root if it exists
-dotenv.config({ path: path.join(__dirname, '../../.env') });
+import * as vscode from 'vscode';
 
 export class JiraClient {
     private domain: string;
@@ -10,12 +8,22 @@ export class JiraClient {
     private apiToken: string;
 
     constructor() {
+        // Load .env from workspace root
+        const workspaceFolders = vscode.workspace.workspaceFolders;
+        if (workspaceFolders && workspaceFolders.length > 0) {
+            const workspacePath = workspaceFolders[0].uri.fsPath;
+            const envPath = path.join(workspacePath, '.env');
+            dotenv.config({ path: envPath });
+        } else {
+            console.warn('No active workspace folder found to load .env');
+        }
+
         this.domain = process.env.JIRA_DOMAIN || '';
         this.email = process.env.JIRA_EMAIL || '';
         this.apiToken = process.env.JIRA_API_TOKEN || '';
 
         if (!this.domain || !this.email || !this.apiToken) {
-            throw new Error('Jira credentials are not fully configured in .env');
+            throw new Error('Jira credentials are not fully configured in .env (make sure it exists in your workspace root)');
         }
     }
 

@@ -2,6 +2,7 @@
   "name": "am-extension",
   "displayName": "Agent Management",
   "description": "AM Task Orchestrator VS Code Extension",
+  "publisher": "karson",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.85.0"
@@ -9,13 +10,26 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onUri"
+  ],
   "main": "./out/extension.js",
+  "bin": {
+    "am": "./bin/am.js"
+  },
   "contributes": {
     "commands": [
       {
         "command": "am.startTask",
         "title": "AM: Start Task"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "am.startTask",
+        "key": "ctrl+shift+a",
+        "mac": "cmd+shift+a",
+        "when": "editorTextFocus || !editorTextFocus"
       }
     ]
   },
